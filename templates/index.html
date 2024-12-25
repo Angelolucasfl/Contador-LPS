@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contador de Valores</title>
+    <script>
+        // Envia o valor para o servidor e atualiza a contagem
+        async function sendValue() {
+            const input = document.getElementById("valueInput").value;
+            const response = await fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ value: input })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                document.getElementById("result").innerText = 
+                    `O valor "${input}" foi enviado ${data.count} vez(es).`;
+                updateTable(); // Atualiza a tabela após o envio
+            } else {
+                document.getElementById("result").innerText = 
+                    `Erro: ${data.error}`;
+            }
+        }
+
+        // Atualiza a tabela com os valores e suas contagens
+        async function updateTable() {
+            const response = await fetch('/values');
+            const data = await response.json();
+
+            const tableBody = document.getElementById("tableBody");
+            tableBody.innerHTML = ""; // Limpa a tabela antes de preenchê-la novamente
+
+            for (const [value, count] of Object.entries(data)) {
+                const row = document.createElement("tr");
+                const valueCell = document.createElement("td");
+                const countCell = document.createElement("td");
+
+                valueCell.textContent = value;
+                countCell.textContent = count;
+
+                row.appendChild(valueCell);
+                row.appendChild(countCell);
+                tableBody.appendChild(row);
+            }
+        }
+
+        // Atualiza a tabela ao carregar a página
+        window.onload = updateTable;
+    </script>
+</head>
+<body>
+    <h1>Contador de Valores</h1>
+    <p>Insira um número e clique em enviar:</p>
+    <input type="text" id="valueInput" placeholder="Digite um número">
+    <button onclick="sendValue()">Enviar</button>
+    <p id="result"></p>
+
+    <h2>Valores recebidos</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Valor</th>
+                <th>Contagem</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+        </tbody>
+    </table>
+</body>
+</html>
